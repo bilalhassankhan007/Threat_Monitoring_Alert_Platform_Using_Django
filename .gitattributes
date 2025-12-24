@@ -1,0 +1,4 @@
+* text=auto
+
+# Keep shell scripts Linux-friendly
+*.sh text eol=lf

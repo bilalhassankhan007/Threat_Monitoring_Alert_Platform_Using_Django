@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Threat Platform — Local Dashboard</title>
+    <style>
+      :root {
+        --bg1: #0b1020;
+        --bg2: #111b3a;
+        --card: rgba(255, 255, 255, 0.08);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.65);
+        --accent: #7c5cff;
+        --accent2: #00d4ff;
+        --good: #30d158;
+        --warn: #ff9f0a;
+        --bad: #ff453a;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--text);
+        background: radial-gradient(
+            1200px 600px at 20% 10%,
+            rgba(124, 92, 255, 0.35),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 500px at 90% 20%,
+            rgba(0, 212, 255, 0.25),
+            transparent 60%
+          ),
+          linear-gradient(135deg, var(--bg1), var(--bg2));
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      .blob {
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        filter: blur(60px);
+        opacity: 0.3;
+        border-radius: 50%;
+        animation: float 10s ease-in-out infinite;
+        pointer-events: none;
+      }
+      .blob.one {
+        background: #7c5cff;
+        top: -180px;
+        left: -180px;
+      }
+      .blob.two {
+        background: #00d4ff;
+        top: -220px;
+        right: -220px;
+        animation-delay: 1.5s;
+      }
+      .blob.three {
+        background: #30d158;
+        bottom: -260px;
+        left: 30%;
+        width: 620px;
+        height: 620px;
+        animation-delay: 3s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(0, 30px) scale(1.03);
+        }
+      }
+
+      .wrap {
+        position: relative;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 18px 60px;
+      }
+
+      header {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+
+      .title {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-width: 720px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 8px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 999px;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow);
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--good);
+        box-shadow: 0 0 18px rgba(48, 209, 88, 0.65);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(22px, 3vw, 32px);
+        letter-spacing: 0.2px;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: var(--radius);
+        padding: 16px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+        animation: pop 0.6s ease both;
+      }
+
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+      }
+      .card .sub {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: linear-gradient(
+          135deg,
+          rgba(124, 92, 255, 0.85),
+          rgba(0, 212, 255, 0.55)
+        );
+        color: white;
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        transition: transform 0.15s ease, filter 0.15s ease;
+        box-shadow: 0 10px 24px rgba(124, 92, 255, 0.22);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.05);
+      }
+      .btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .btn.secondary {
+        background: rgba(255, 255, 255, 0.06);
+        box-shadow: none;
+      }
+      .btn.ghost {
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      label {
+        font-size: 12px;
+        color: var(--muted);
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        outline: none;
+      }
+      input:focus,
+      select:focus {
+        border-color: rgba(0, 212, 255, 0.55);
+        box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.12);
+      }
+
+      .tokenBox {
+        margin-top: 12px;
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.85);
+        white-space: pre-wrap;
+        word-break: break-word;
+        min-height: 68px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .status {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .status.ok {
+        color: rgba(48, 209, 88, 0.9);
+      }
+      .status.err {
+        color: rgba(255, 69, 58, 0.92);
+      }
+      .hint {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .footer {
+        margin-top: 18px;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 12px;
+      }
+
+      .tableWrap {
+        margin-top: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th,
+      td {
+        padding: 10px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        vertical-align: top;
+      }
+      th {
+        text-align: left;
+        color: rgba(255, 255, 255, 0.78);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      tr:hover td {
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .mini {
+        padding: 6px 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .tag {
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .tag.crit {
+        border-color: rgba(255, 69, 58, 0.45);
+        color: rgba(255, 69, 58, 0.95);
+      }
+      .tag.high {
+        border-color: rgba(255, 159, 10, 0.45);
+        color: rgba(255, 159, 10, 0.95);
+      }
+      .tag.med {
+        border-color: rgba(0, 212, 255, 0.35);
+        color: rgba(0, 212, 255, 0.95);
+      }
+      .tag.low {
+        border-color: rgba(48, 209, 88, 0.35);
+        color: rgba(48, 209, 88, 0.95);
+      }
+      .tag.open {
+        border-color: rgba(0, 212, 255, 0.35);
+        color: rgba(0, 212, 255, 0.95);
+      }
+      .tag.ack {
+        border-color: rgba(255, 159, 10, 0.35);
+        color: rgba(255, 159, 10, 0.95);
+      }
+      .tag.res {
+        border-color: rgba(48, 209, 88, 0.35);
+        color: rgba(48, 209, 88, 0.95);
+      }
+
+      @media (max-width: 880px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+    <div class="blob three"></div>
+
+    <div class="wrap">
+      <header>
+        <div class="title">
+          <div class="badge">
+            <span class="dot"></span>
+            <span>Local Server Running</span>
+            <span style="opacity: 0.6">•</span>
+            <span id="baseUrl" style="opacity: 0.85"></span>
+          </div>
+          <h1>Threat Monitoring Platform — Local Dashboard</h1>
+          <p>
+            Demo everything: docs, admin, JWT, create analyst, ingest events,
+            list alerts, update status.
+          </p>
+        </div>
+
+        <div class="pill">
+          <span>Quick Links:</span>
+          <a class="btn ghost" href="/api/" style="padding: 8px 10px"
+            >API Root</a
+          >
+        </div>
+      </header>
+
+      <div class="grid">
+        <!-- Left -->
+        <div class="card">
+          <h2>1) Swagger API Documentation</h2>
+          <div class="sub">Explore and test endpoints with a UI.</div>
+          <div class="actions">
+            <a class="btn" href="/api/docs/" target="_blank" rel="noreferrer"
+              >🚀 Open Swagger</a
+            >
+            <a
+              class="btn secondary"
+              href="/api/schema/"
+              target="_blank"
+              rel="noreferrer"
+              >🧾 OpenAPI Schema</a
+            >
+          </div>
+
+          <div style="height: 14px"></div>
+
+          <h2>2) Admin Panel</h2>
+          <div class="sub">Manage users, view Events & Alerts tables.</div>
+          <div class="actions">
+            <a class="btn" href="/admin/" target="_blank" rel="noreferrer"
+              >🔐 Open Admin</a
+            >
+            <span class="pill">Admin can manage Users / Events / Alerts</span>
+          </div>
+
+          <div class="hint">
+            <b>Note:</b> Django Admin cannot be embedded for security, so it
+            opens in a new tab.
+          </div>
+
+          <div class="footer">
+            Recommended demo flow: Get token → Test API → Alerts table → Update
+            alert status.
+          </div>
+        </div>
+
+        <!-- Right -->
+        <div class="card">
+          <h2>3) JWT Token Generator</h2>
+          <div class="sub">
+            Generate access/refresh token and store in browser for dashboard
+            actions.
+          </div>
+
+          <div class="row">
+            <div style="flex: 1; min-width: 220px">
+              <label for="username">Username</label>
+              <input
+                id="username"
+                placeholder="e.g., admin"
+                autocomplete="username"
+              />
+            </div>
+            <div style="flex: 1; min-width: 220px">
+              <label for="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Your password"
+                autocomplete="current-password"
+              />
+            </div>
+          </div>
+
+          <div style="height: 10px"></div>
+
+          <div class="actions">
+            <button class="btn" id="getTokenBtn">🔑 Get Token</button>
+            <button class="btn secondary" id="copyAccessBtn" disabled>
+              📋 Copy Access
+            </button>
+            <button class="btn secondary" id="copyRefreshBtn" disabled>
+              📋 Copy Refresh
+            </button>
+            <button class="btn secondary" id="clearTokenBtn">
+              🧹 Clear Token
+            </button>
+          </div>
+
+          <div class="status" id="statusText">
+            Tip: use your superuser (Admin) or analyst credentials.
+          </div>
+
+          <div class="tokenBox" id="tokenBox">Tokens will appear here…</div>
+
+          <div class="hint">
+            Swagger authorize format:
+            <span style="opacity: 0.9; font-family: ui-monospace, monospace"
+              >Bearer &lt;ACCESS_TOKEN&gt;</span
+            >
+          </div>
+
+          <!-- Admin Tools -->
+          <div style="height: 14px"></div>
+
+          <h2>Admin Tools</h2>
+          <div class="sub">
+            Admin only: Create Analyst + create CRITICAL event.
+          </div>
+
+          <div class="row">
+            <div style="flex: 1; min-width: 220px">
+              <label for="analystUsername">Analyst Username (optional)</label>
+              <input id="analystUsername" placeholder="leave blank for auto" />
+            </div>
+            <div style="flex: 1; min-width: 220px">
+              <label for="analystPassword">Analyst Password (optional)</label>
+              <input id="analystPassword" placeholder="leave blank for auto" />
+            </div>
+          </div>
+
+          <div style="height: 10px"></div>
+
+          <div class="actions">
+            <button class="btn" id="createAnalystBtn">👤 Create Analyst</button>
+            <button class="btn secondary" id="testApiBtn">
+              🧪 Test API (CRITICAL)
+            </button>
+          </div>
+
+          <div class="tokenBox" id="adminToolBox" style="margin-top: 12px">
+            Admin tool output will appear here…
+          </div>
+
+          <!-- Alerts Viewer -->
+          <div style="height: 14px"></div>
+
+          <h2>Alerts Viewer</h2>
+          <div class="sub">
+            Analyst: view only ✅ | Admin: can update status ✅
+          </div>
+
+          <div class="row">
+            <div style="flex: 1; min-width: 160px">
+              <label for="filterSeverity">Severity</label>
+              <select id="filterSeverity">
+                <option value="">All</option>
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+                <option value="CRITICAL">CRITICAL</option>
+              </select>
+            </div>
+            <div style="flex: 1; min-width: 160px">
+              <label for="filterStatus">Status</label>
+              <select id="filterStatus">
+                <option value="">All</option>
+                <option value="OPEN">OPEN</option>
+                <option value="ACKNOWLEDGED">ACKNOWLEDGED</option>
+                <option value="RESOLVED">RESOLVED</option>
+              </select>
+            </div>
+            <div style="flex: 1; min-width: 140px">
+              <label for="pageSize">Page Size</label>
+              <select id="pageSize">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="height: 10px"></div>
+
+          <div class="actions">
+            <button class="btn secondary" id="refreshAlertsBtn">
+              🔄 Refresh Alerts
+            </button>
+            <button class="btn secondary" id="prevBtn" disabled>⬅ Prev</button>
+            <button class="btn secondary" id="nextBtn" disabled>Next ➡</button>
+            <span class="pill" id="pageInfo">Page —</span>
+          </div>
+
+          <div class="tableWrap" id="alertsWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 76px">Alert</th>
+                  <th style="width: 120px">Severity</th>
+                  <th style="width: 140px">Status</th>
+                  <th>Event</th>
+                  <th style="width: 210px">Created</th>
+                  <th style="width: 210px">Update (Admin)</th>
+                </tr>
+              </thead>
+              <tbody id="alertsBody">
+                <tr>
+                  <td colspan="6" style="color: rgba(255, 255, 255, 0.65)">
+                    No data yet. Click Refresh Alerts.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="hint" id="alertsHint">
+            Tip: use Test API to create CRITICAL events → they generate alerts
+            automatically.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("baseUrl").textContent = window.location.origin;
+
+      const statusText = document.getElementById("statusText");
+      const tokenBox = document.getElementById("tokenBox");
+      const getTokenBtn = document.getElementById("getTokenBtn");
+      const copyAccessBtn = document.getElementById("copyAccessBtn");
+      const copyRefreshBtn = document.getElementById("copyRefreshBtn");
+      const clearTokenBtn = document.getElementById("clearTokenBtn");
+
+      const createAnalystBtn = document.getElementById("createAnalystBtn");
+      const testApiBtn = document.getElementById("testApiBtn");
+      const adminToolBox = document.getElementById("adminToolBox");
+
+      const filterSeverity = document.getElementById("filterSeverity");
+      const filterStatus = document.getElementById("filterStatus");
+      const pageSizeSel = document.getElementById("pageSize");
+      const refreshAlertsBtn = document.getElementById("refreshAlertsBtn");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const pageInfo = document.getElementById("pageInfo");
+      const alertsBody = document.getElementById("alertsBody");
+      const alertsHint = document.getElementById("alertsHint");
+
+      let lastAccess = localStorage.getItem("tp_access") || "";
+      let lastRefresh = localStorage.getItem("tp_refresh") || "";
+
+      let alertsPage = 1;
+      let alertsNext = null;
+      let alertsPrev = null;
+      let canUpdate = true; // will flip to false if 403 encountered
+
+      function setStatus(msg, type) {
+        statusText.textContent = msg;
+        statusText.className = "status " + (type || "");
+      }
+
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          setStatus("Copied to clipboard ✅", "ok");
+        } catch (e) {
+          setStatus("Copy failed. You can manually select and copy.", "err");
+        }
+      }
+
+      function syncTokenUI() {
+        copyAccessBtn.disabled = !lastAccess;
+        copyRefreshBtn.disabled = !lastRefresh;
+
+        if (lastAccess || lastRefresh) {
+          tokenBox.textContent = JSON.stringify(
+            { access: lastAccess, refresh: lastRefresh },
+            null,
+            2
+          );
+          setStatus("JWT ready ✅ (stored in browser)", "ok");
+        } else {
+          tokenBox.textContent = "Tokens will appear here…";
+          setStatus(
+            "Tip: use your superuser (Admin) or analyst credentials.",
+            ""
+          );
+        }
+      }
+
+      copyAccessBtn.addEventListener("click", () =>
+        copyToClipboard(lastAccess)
+      );
+      copyRefreshBtn.addEventListener("click", () =>
+        copyToClipboard(lastRefresh)
+      );
+
+      clearTokenBtn.addEventListener("click", () => {
+        lastAccess = "";
+        lastRefresh = "";
+        localStorage.removeItem("tp_access");
+        localStorage.removeItem("tp_refresh");
+        adminToolBox.textContent = "Admin tool output will appear here…";
+        canUpdate = true;
+        syncTokenUI();
+        setStatus("Token cleared ✅", "ok");
+      });
+
+      syncTokenUI();
+
+      getTokenBtn.addEventListener("click", async () => {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+
+        if (!username || !password) {
+          setStatus("Enter username and password.", "err");
+          return;
+        }
+
+        getTokenBtn.disabled = true;
+        setStatus("Requesting token…", "");
+        tokenBox.textContent = "Loading…";
+
+        try {
+          const res = await fetch("/api/auth/token/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            const msg = data?.detail || "Invalid credentials or server error.";
+            setStatus("Token request failed: " + msg, "err");
+            tokenBox.textContent = JSON.stringify(data, null, 2);
+            lastAccess = "";
+            lastRefresh = "";
+            localStorage.removeItem("tp_access");
+            localStorage.removeItem("tp_refresh");
+            syncTokenUI();
+            return;
+          }
+
+          lastAccess = data.access || "";
+          lastRefresh = data.refresh || "";
+          localStorage.setItem("tp_access", lastAccess);
+          localStorage.setItem("tp_refresh", lastRefresh);
+
+          canUpdate = true; // reset on new login
+          setStatus("Token generated ✅", "ok");
+          tokenBox.textContent = JSON.stringify(data, null, 2);
+          syncTokenUI();
+        } catch (err) {
+          setStatus("Network error. Is the server running?", "err");
+          tokenBox.textContent = String(err);
+        } finally {
+          getTokenBtn.disabled = false;
+        }
+      });
+
+      async function authedFetch(url, options = {}) {
+        if (!lastAccess)
+          throw new Error("No access token. Generate JWT token first.");
+
+        const headers = options.headers || {};
+        headers["Authorization"] = `Bearer ${lastAccess}`;
+        options.headers = headers;
+
+        const res = await fetch(url, options);
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (e) {}
+        return { res, data };
+      }
+
+      // Admin tools
+      createAnalystBtn.addEventListener("click", async () => {
+        createAnalystBtn.disabled = true;
+        adminToolBox.textContent = "Creating analyst…";
+
+        try {
+          const username = document
+            .getElementById("analystUsername")
+            .value.trim();
+          const password = document.getElementById("analystPassword").value;
+
+          const { res, data } = await authedFetch(
+            "/api/dashboard/create-analyst/",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                username: username || undefined,
+                password: password || undefined,
+              }),
+            }
+          );
+
+          if (!res.ok) {
+            adminToolBox.textContent = JSON.stringify(data, null, 2);
+            setStatus("Create analyst failed (need Admin token).", "err");
+            return;
+          }
+
+          adminToolBox.textContent = JSON.stringify(data, null, 2);
+          setStatus("Analyst created ✅ (credentials shown below)", "ok");
+
+          document.getElementById("analystUsername").value =
+            data.username || "";
+          document.getElementById("analystPassword").value =
+            data.password || "";
+        } catch (err) {
+          adminToolBox.textContent = String(err);
+          setStatus("Create analyst error.", "err");
+        } finally {
+          createAnalystBtn.disabled = false;
+        }
+      });
+
+      testApiBtn.addEventListener("click", async () => {
+        testApiBtn.disabled = true;
+        adminToolBox.textContent =
+          "Running Test API… Creating CRITICAL event & alert…";
+
+        try {
+          const { res, data } = await authedFetch("/api/dashboard/test-api/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              source_name: "Camera-01",
+              event_type: "INTRUSION",
+              description: "Dashboard demo CRITICAL event",
+            }),
+          });
+
+          if (!res.ok) {
+            adminToolBox.textContent = JSON.stringify(data, null, 2);
+            setStatus("Test API failed (need Admin token).", "err");
+            return;
+          }
+
+          adminToolBox.textContent = JSON.stringify(data, null, 2);
+          setStatus("Test API success ✅ Event + Alert created", "ok");
+
+          // auto refresh alerts after a successful test
+          await loadAlerts(1);
+        } catch (err) {
+          adminToolBox.textContent = String(err);
+          setStatus("Test API error.", "err");
+        } finally {
+          testApiBtn.disabled = false;
+        }
+      });
+
+      function tagSeverity(sev) {
+        const s = (sev || "").toUpperCase();
+        if (s === "CRITICAL") return `<span class="tag crit">CRITICAL</span>`;
+        if (s === "HIGH") return `<span class="tag high">HIGH</span>`;
+        if (s === "MEDIUM") return `<span class="tag med">MEDIUM</span>`;
+        return `<span class="tag low">LOW</span>`;
+      }
+      function tagStatus(st) {
+        const s = (st || "").toUpperCase();
+        if (s === "OPEN") return `<span class="tag open">OPEN</span>`;
+        if (s === "ACKNOWLEDGED") return `<span class="tag ack">ACK</span>`;
+        return `<span class="tag res">RESOLVED</span>`;
+      }
+
+      async function loadAlerts(page = 1) {
+        alertsHint.textContent = "Loading alerts…";
+        alertsBody.innerHTML = `<tr><td colspan="6" style="color: rgba(255,255,255,.65)">Loading…</td></tr>`;
+
+        if (!lastAccess) {
+          alertsHint.textContent = "Generate JWT token first to view alerts.";
+          alertsBody.innerHTML = `<tr><td colspan="6" style="color: rgba(255,255,255,.65)">No token. Generate token first.</td></tr>`;
+          prevBtn.disabled = true;
+          nextBtn.disabled = true;
+          pageInfo.textContent = "Page —";
+          return;
+        }
+
+        const sev = filterSeverity.value;
+        const st = filterStatus.value;
+        const pageSize = pageSizeSel.value;
+
+        const qs = new URLSearchParams();
+        if (sev) qs.set("severity", sev);
+        if (st) qs.set("status", st);
+        qs.set("page", String(page));
+        qs.set("page_size", String(pageSize));
+
+        try {
+          const { res, data } = await authedFetch(
+            `/api/dashboard/alerts/?${qs.toString()}`
+          );
+
+          if (!res.ok) {
+            alertsHint.textContent = "Failed to load alerts.";
+            alertsBody.innerHTML = `<tr><td colspan="6" style="color: rgba(255,255,255,.65)">${JSON.stringify(
+              data,
+              null,
+              2
+            )}</td></tr>`;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            pageInfo.textContent = "Page —";
+            return;
+          }
+
+          alertsNext = data.next;
+          alertsPrev = data.previous;
+          alertsPage = page;
+
+          prevBtn.disabled = !alertsPrev;
+          nextBtn.disabled = !alertsNext;
+
+          pageInfo.textContent = `Page ${alertsPage} • Total ${data.count}`;
+
+          const rows = data.results || [];
+          if (!rows.length) {
+            alertsHint.textContent = "No alerts found for current filters.";
+            alertsBody.innerHTML = `<tr><td colspan="6" style="color: rgba(255,255,255,.65)">No alerts found.</td></tr>`;
+            return;
+          }
+
+          alertsHint.textContent =
+            "Showing latest alerts (ordered by created_at desc).";
+
+          alertsBody.innerHTML = rows
+            .map((a) => {
+              const ev = a.event || {};
+              const created = a.created_at
+                ? new Date(a.created_at).toLocaleString()
+                : "—";
+              const evTime = ev.timestamp
+                ? new Date(ev.timestamp).toLocaleString()
+                : "—";
+
+              const updateControls = `
+                <div class="mini">
+                  <select data-alert="${
+                    a.id
+                  }" class="statusSel" style="min-width:140px;">
+                    <option value="OPEN"${
+                      a.status === "OPEN" ? " selected" : ""
+                    }>OPEN</option>
+                    <option value="ACKNOWLEDGED"${
+                      a.status === "ACKNOWLEDGED" ? " selected" : ""
+                    }>ACKNOWLEDGED</option>
+                    <option value="RESOLVED"${
+                      a.status === "RESOLVED" ? " selected" : ""
+                    }>RESOLVED</option>
+                  </select>
+                  <button class="btn secondary updateBtn" data-alert="${
+                    a.id
+                  }" style="padding:8px 10px;">Update</button>
+                </div>
+              `;
+
+              return `
+                <tr>
+                  <td>#${a.id}</td>
+                  <td>${tagSeverity(ev.severity)}</td>
+                  <td>${tagStatus(a.status)}</td>
+                  <td>
+                    <div style="color: rgba(255,255,255,.9); font-weight:700;">${
+                      ev.event_type || "—"
+                    } • ${ev.source_name || "—"}</div>
+                    <div style="color: rgba(255,255,255,.65); margin-top:4px;">${(
+                      ev.description || ""
+                    ).slice(0, 120)}${
+                (ev.description || "").length > 120 ? "…" : ""
+              }</div>
+                    <div style="color: rgba(255,255,255,.45); margin-top:6px;">Event time: ${evTime}</div>
+                  </td>
+                  <td>${created}</td>
+                  <td>${updateControls}</td>
+                </tr>
+              `;
+            })
+            .join("");
+
+          // Hook up update buttons
+          document.querySelectorAll(".updateBtn").forEach((btn) => {
+            btn.addEventListener("click", () =>
+              onUpdateStatus(btn.dataset.alert)
+            );
+          });
+
+          // If user is Analyst, update will 403 and we disable controls afterwards.
+          if (!canUpdate) {
+            disableUpdateControls();
+          }
+        } catch (err) {
+          alertsHint.textContent = "Error loading alerts.";
+          alertsBody.innerHTML = `<tr><td colspan="6" style="color: rgba(255,255,255,.65)">${String(
+            err
+          )}</td></tr>`;
+          prevBtn.disabled = true;
+          nextBtn.disabled = true;
+          pageInfo.textContent = "Page —";
+        }
+      }
+
+      function disableUpdateControls() {
+        document
+          .querySelectorAll(".statusSel")
+          .forEach((s) => (s.disabled = true));
+        document
+          .querySelectorAll(".updateBtn")
+          .forEach((b) => (b.disabled = true));
+      }
+
+      async function onUpdateStatus(alertId) {
+        const select = document.querySelector(
+          `.statusSel[data-alert="${alertId}"]`
+        );
+        const newStatus = select ? select.value : null;
+        if (!newStatus) return;
+
+        try {
+          const { res, data } = await authedFetch(
+            `/api/dashboard/alerts/${alertId}/status/`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: newStatus }),
+            }
+          );
+
+          if (!res.ok) {
+            // If analyst token -> 403
+            if (res.status === 403) {
+              canUpdate = false;
+              disableUpdateControls();
+              setStatus(
+                "You are Analyst (read-only). Admin required to update status.",
+                "err"
+              );
+              return;
+            }
+
+            setStatus("Update failed.", "err");
+            alertsHint.textContent = "Update failed: " + JSON.stringify(data);
+            return;
+          }
+
+          setStatus(`Alert #${alertId} updated ✅`, "ok");
+          await loadAlerts(alertsPage);
+        } catch (err) {
+          setStatus("Update error.", "err");
+          alertsHint.textContent = String(err);
+        }
+      }
+
+      refreshAlertsBtn.addEventListener("click", () => loadAlerts(1));
+      prevBtn.addEventListener("click", () => {
+        if (alertsPrev) loadAlerts(Math.max(1, alertsPage - 1));
+      });
+      nextBtn.addEventListener("click", () => {
+        if (alertsNext) loadAlerts(alertsPage + 1);
+      });
+
+      // optional: auto-load if token already exists
+      if (lastAccess) loadAlerts(1);
+    </script>
+  </body>
+</html>
